@@ -21,6 +21,7 @@ class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
         val assignmentsInfo: MutableMap<String, MutableList<ElementAssignInfo>> = mutableMapOf()
 
         for (assignment in assignments) {
+
             assignment.expression.let {
                 if (it.isGetElem) {
                     // Considered that GETELEM always has two childs: array name and index
@@ -52,6 +53,12 @@ class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
         for ((arrayName, assignments) in assignmentsInfo) {
             // It makes no sense to combine only one assignment
             assignments.forEach { token, sameTypeAssignments ->
+
+                // It makes no sense to combine only one assignment
+                if (sameTypeAssignments.size <= 1) {
+                    return@forEach
+                }
+
                 val newNode = makeArrayPattern(token, arrayName, sameTypeAssignments)
                 suggestedReplaces.add(
                     JsAssignmentReplaceInfo(
