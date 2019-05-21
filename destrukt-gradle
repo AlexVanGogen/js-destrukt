@@ -1,0 +1,6 @@
+if [ -z "$1" ]
+  then
+    ./gradlew run
+  else
+    ./gradlew run --args=$1
+fi
