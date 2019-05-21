@@ -6,4 +6,8 @@ class JsAssignment(
     val node: Node,
     val assignee: Node,
     val expression: Node
-)
+) {
+    override fun toString(): String {
+        return "$assignee = $expression"
+    }
+}

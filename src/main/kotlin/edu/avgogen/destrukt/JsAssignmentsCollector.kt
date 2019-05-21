@@ -56,8 +56,8 @@ class JsAssignmentsCollector: JsAssignmentsHandler {
         fun dump() {
             println()
             println("Enter scope")
-            assignments.forEach { name, assignment ->
-                println("$name = ${assignment.expression}")
+            assignments.forEach { _, assignment ->
+                println(assignment)
             }
             println("End scope")
             println()
