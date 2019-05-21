@@ -1,7 +1,6 @@
 package edu.avgogen.destrukt.analyze
 
 import edu.avgogen.destrukt.JsAssignment
-import edu.avgogen.destrukt.analyze.JsAssignmentsAnalyzingStrategy
 
 /**
  * Finds out which assignments can be combined into one destructuring assignment.
@@ -15,7 +14,7 @@ class JsAssignmentsAnalyzer {
         return this
     }
 
-    fun analyze(assignments: List<JsAssignment>): List<StrategyResult> {
+    fun analyze(assignments: List<JsAssignment>): List<StrategySuggestedReplacements> {
         return strategies.map { it.analyze(assignments) }
     }
 }

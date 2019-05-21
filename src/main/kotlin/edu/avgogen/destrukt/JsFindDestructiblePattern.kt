@@ -1,6 +1,8 @@
 package edu.avgogen.destrukt
 
+import com.google.javascript.jscomp.CodePrinter
 import com.google.javascript.jscomp.NodeTraversal
+import com.google.javascript.rhino.IR
 import com.google.javascript.rhino.Node
 import edu.avgogen.destrukt.analyze.JsAssignArrayElementsStrategy
 import edu.avgogen.destrukt.analyze.JsAssignmentsAnalyzer
@@ -8,12 +10,16 @@ import edu.avgogen.destrukt.analyze.JsAssignmentsAnalyzer
 class JsFindDestructiblePattern: NodeTraversal.AbstractScopedCallback() {
 
     private val collector = JsAssignmentsCollector()
+    private var root: Node? = null
 
     init {
         collector.enterNewScope()
     }
 
     override fun visit(traversal: NodeTraversal, node: Node, parent: Node?) {
+        if (node.isScript) {
+            root = node
+        }
         if (node.isVar) {
             node.children().forEach { assignee ->
                 assignee.firstChild?.let { assignableExpression ->
@@ -36,11 +42,31 @@ class JsFindDestructiblePattern: NodeTraversal.AbstractScopedCallback() {
         super.exitScope(t)
     }
 
+    /**
+     * TODO refactor
+     */
     private fun endSearch() {
         collector.exitLastScope();
         val analyzer = JsAssignmentsAnalyzer()
         analyzer.addStrategy(JsAssignArrayElementsStrategy())
-        println(collector.applyAnalysis(analyzer).joinToString("\n") { it.joinToString() })
+        val summary = collector.applyAnalysis(analyzer)
+            .flatten()
+            .filter { it.replacements.isNotEmpty() }
+            .groupBy { it.strategyClass }
+//        println(summary.values.flatten().joinToString("\n\n"))
+        summary.values.flatten().forEach { it.replacements.forEach { replaceInfo ->
+            val assignmentsToReplace = replaceInfo.assignmentsToReplace
+            if (assignmentsToReplace.isNotEmpty()) {
+                val nodeToReplace = assignmentsToReplace[0]
+                nodeToReplace.node.replaceWith(replaceInfo.suggestedAssignment)
+                assignmentsToReplace.drop(1).forEach { assignment ->
+                    if (assignment.node.parent != null) {
+                        assignment.node.replaceWith(IR.empty())
+                    }
+                }
+            }
+        } }
+        println(CodePrinter.Builder(root).setPrettyPrint(true).build())
     }
 
     fun analyzeVisited(analyzer: JsAssignmentsAnalyzer) {
@@ -49,10 +75,5 @@ class JsFindDestructiblePattern: NodeTraversal.AbstractScopedCallback() {
 
     fun dumpFoundAssignments() {
         collector.dumpVisited()
-    }
-
-    private fun Node.prettyPrint(indent: Int = 0) {
-        println("\t".repeat(indent) + this)
-        children().forEach { it.prettyPrint(indent + 1) }
     }
 }

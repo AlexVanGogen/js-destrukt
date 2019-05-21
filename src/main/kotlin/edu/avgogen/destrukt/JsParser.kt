@@ -16,7 +16,6 @@ class JsParser {
         val root = JsAst(SourceFile.fromCode(jsFileName, jsFileContent)).getAstRoot(compiler)
         val jsFinder = JsFindDestructiblePattern()
         NodeTraversal.traverse(compiler, root, jsFinder)
-        jsFinder.dumpFoundAssignments()
     }
 }
 

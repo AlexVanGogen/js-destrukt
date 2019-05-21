@@ -1,16 +1,16 @@
 package edu.avgogen.destrukt.analyze
 
 
-class StrategyResult(
+class StrategySuggestedReplacements(
     val strategyClass: Class<JsAssignmentsAnalyzingStrategy>,
-    val suggestedReplaces: List<JsAssignmentReplaceInfo>
+    val replacements: List<JsAssignmentReplaceInfo>
 ) {
     override fun toString(): String {
         val builder = StringBuilder()
         builder
             .append(strategyClass.canonicalName ?: "<unknown qn>")
             .append(":\n")
-            .append(suggestedReplaces.joinToString("\n", "=".repeat(10), "=".repeat(10)))
+            .append(replacements.joinToString("\n", "=".repeat(10), "=".repeat(10)))
         return builder.toString()
     }
 }
