@@ -32,7 +32,9 @@ class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
                 }
             }
         }
-        return assignmentsInfo.splitByDeclarationType()
+        return assignmentsInfo
+            .splitByDeclarationType()
+            .filterRepeatingIndexAccess()
     }
 
     /**
@@ -43,10 +45,26 @@ class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
             assignmentInfos.groupBy { it.assignment.node.token }
         }
     }
+    
+    private fun Map<String, Map<Token, List<ElementAssignInfo>>>.filterRepeatingIndexAccess(): Map<String, Map<Token, List<ElementAssignInfo>>> {
+        val filteredMap = mutableMapOf<String, Map<Token, List<ElementAssignInfo>>>()
+        forEach { arrayName, map ->
+            val oneTypeAssignments = mutableMapOf<Token, List<ElementAssignInfo>>()
+            map.forEach { token, assignmentsInfos ->
+                val indicesMet = mutableSetOf<Int>()
+                oneTypeAssignments[token] = assignmentsInfos.filter { info ->
+                    if (info.index in indicesMet) {
+                        return@filter false
+                    }
+                    indicesMet.add(info.index)
+                    return@filter true
+                }
+            }
+            filteredMap[arrayName] = oneTypeAssignments
+        }
+        return filteredMap
+    }
 
-    /**
-     * TODO: Filter assignments to prevent removing both var a = arr[1]; var b = arr[1]
-     */
     private fun makeSuggestions(assignmentsInfo: Map<String, Map<Token, List<ElementAssignInfo>>>): StrategySuggestedReplacements {
         val suggestedReplaces = mutableListOf<JsAssignmentReplaceInfo>()
         for ((arrayName, assignments) in assignmentsInfo) {
