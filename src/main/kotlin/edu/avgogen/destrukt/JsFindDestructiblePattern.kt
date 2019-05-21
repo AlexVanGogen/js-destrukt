@@ -37,6 +37,13 @@ class JsFindDestructiblePattern: NodeTraversal.AbstractScopedCallback() {
                 }
             }
         }
+        if (node.isAssign && node.childCount == 2) {
+            val assignee = node.firstChild!!
+            val assignableExpression = node.secondChild!!
+            if (assignee.isName && assignableExpression.isGetElem) {
+                collector.addAssignment(node, assignee, assignableExpression)
+            }
+        }
     }
 
     override fun enterScope(t: NodeTraversal?) {

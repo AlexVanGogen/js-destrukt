@@ -4,6 +4,7 @@ import com.google.javascript.rhino.IR
 import com.google.javascript.rhino.Node
 import com.google.javascript.rhino.Token
 import edu.avgogen.destrukt.JsAssignment
+import edu.avgogen.destrukt.prettyPrint
 
 
 class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
@@ -16,7 +17,6 @@ class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
     private fun collectArrayElementsAssignments(
         assignments: List<JsAssignment>
     ): Map<String, Map<Token, List<ElementAssignInfo>>> {
-
         // Keys are array names
         val assignmentsInfo: MutableMap<String, MutableList<ElementAssignInfo>> = mutableMapOf()
 
@@ -50,7 +50,7 @@ class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
     private fun makeSuggestions(assignmentsInfo: Map<String, Map<Token, List<ElementAssignInfo>>>): StrategySuggestedReplacements {
         val suggestedReplaces = mutableListOf<JsAssignmentReplaceInfo>()
         for ((arrayName, assignments) in assignmentsInfo) {
-            // It makes no sense to combine only one assignment
+
             assignments.forEach { token, sameTypeAssignments ->
 
                 // It makes no sense to combine only one assignment
@@ -77,11 +77,18 @@ class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
         assignments.forEach {
             targets[it.index] = IR.name(it.assignment.assignee.string)
         }
-        return IR.declaration(
-            IR.arrayPattern(*targets),
-            IR.name(arrayName),
-            token
-        )
+        return if (token == Token.ASSIGN) {
+            IR.assign(
+                IR.arrayPattern(*targets),
+                IR.name(arrayName)
+            )
+        } else {
+            IR.declaration(
+                IR.arrayPattern(*targets),
+                IR.name(arrayName),
+                token
+            )
+        }
     }
 
     private class ElementAssignInfo(
