@@ -1,6 +1,7 @@
 package edu.avgogen.destrukt.analyze
 
 import com.google.javascript.rhino.IR
+import com.google.javascript.rhino.Node
 import com.google.javascript.rhino.Token
 import edu.avgogen.destrukt.JsAssignment
 
@@ -32,15 +33,19 @@ class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
         return assignmentsInfo
     }
 
+    /**
+     * TODO: Filter assignments to prevent removing both var a = arr[1]; var b = arr[1]
+     * TODO: Group by declaration type (var / let / const)
+     */
     private fun makeSuggestions(assignmentsInfo: Map<String, List<ElementAssignInfo>>): StrategySuggestedReplacements {
         val suggestedReplaces = mutableListOf<JsAssignmentReplaceInfo>()
         for ((arrayName, assignments) in assignmentsInfo) {
-            val targets = ArrayList(assignments.map { IR.name(it.assignment.assignee.string) })
-            val newNode = IR.declaration(
-                IR.arrayPattern(*targets.toArray(arrayOf())),
-                IR.name(arrayName),
-                Token.VAR
-            )
+
+            // It makes no sense to combine only one assignment
+            if (assignments.size <= 1) {
+                continue
+            }
+            val newNode = makeArrayPattern(arrayName, assignments)
             suggestedReplaces.add(JsAssignmentReplaceInfo(
                 assignments.map { it.assignment },
                 newNode
@@ -48,6 +53,20 @@ class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
         }
 
         return StrategySuggestedReplacements(JsAssignmentsAnalyzingStrategy::class.java, suggestedReplaces)
+    }
+
+    private fun makeArrayPattern(arrayName: String, assignments: List<ElementAssignInfo>): Node {
+        val maximumIndex = assignments.map { it.index }.max() ?: return IR.empty()
+        val targets = Array<Node>(maximumIndex + 1) { IR.name("") }
+        assignments.forEach {
+            targets[it.index] = IR.name(it.assignment.assignee.string)
+        }
+        targets.forEach { println(it) }
+        return IR.declaration(
+            IR.arrayPattern(*targets),
+            IR.name(arrayName),
+            assignments[0].assignment.node.token
+        )
     }
 
     private class ElementAssignInfo(

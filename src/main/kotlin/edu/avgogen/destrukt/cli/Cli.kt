@@ -26,7 +26,7 @@ fun main(args: Array<String>) {
 
 private fun run(jsFile: File): String? {
     val compiler = Compiler()
-    var jsFileContent: String? = null
+    val jsFileContent: String?
 
     try {
         jsFileContent = jsFile.readText()

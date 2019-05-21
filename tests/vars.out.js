@@ -1,5 +1,5 @@
 function foo(arr) {
-  var [a, b] = arr;
+  let [a, b] = arr;
 }
 function bar(arr) {
   var [a, b, c, d] = arr;

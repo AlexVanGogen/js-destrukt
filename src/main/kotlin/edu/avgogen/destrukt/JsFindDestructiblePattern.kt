@@ -30,7 +30,7 @@ class JsFindDestructiblePattern: NodeTraversal.AbstractScopedCallback() {
         if (node.isScript) {
             root = node
         }
-        if (node.isVar) {
+        if (node.isVar || node.isConst || node.isLet) {
             node.children().forEach { assignee ->
                 assignee.firstChild?.let { assignableExpression ->
                     collector.addAssignment(node, assignee, assignableExpression)
