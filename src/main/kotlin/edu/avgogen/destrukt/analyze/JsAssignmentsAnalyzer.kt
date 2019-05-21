@@ -1,8 +1,7 @@
 package edu.avgogen.destrukt.analyze
 
 import edu.avgogen.destrukt.JsAssignment
-import edu.avgogen.destrukt.analy.JsAssignmentsAnalyzingStrategy
-import kotlin.reflect.KClass
+import edu.avgogen.destrukt.analyze.JsAssignmentsAnalyzingStrategy
 
 /**
  * Finds out which assignments can be combined into one destructuring assignment.

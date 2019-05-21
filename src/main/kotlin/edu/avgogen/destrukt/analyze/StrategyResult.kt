@@ -1,7 +1,5 @@
 package edu.avgogen.destrukt.analyze
 
-import edu.avgogen.destrukt.JsAssignment
-import edu.avgogen.destrukt.analy.JsAssignmentsAnalyzingStrategy
 
 class StrategyResult(
     val strategyClass: Class<JsAssignmentsAnalyzingStrategy>,

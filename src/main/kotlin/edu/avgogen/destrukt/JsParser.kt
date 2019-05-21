@@ -1,6 +1,8 @@
 package edu.avgogen.destrukt
 
 import com.google.javascript.jscomp.*
+import edu.avgogen.destrukt.analyze.JsAssignArrayElementsStrategy
+import edu.avgogen.destrukt.analyze.JsAssignmentsAnalyzer
 import java.io.File
 
 class JsParser {

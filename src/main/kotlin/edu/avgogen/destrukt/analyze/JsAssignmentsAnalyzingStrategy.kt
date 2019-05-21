@@ -1,4 +1,4 @@
-package edu.avgogen.destrukt.`analy`
+package edu.avgogen.destrukt.analyze
 
 import edu.avgogen.destrukt.JsAssignment
 import edu.avgogen.destrukt.analyze.StrategyResult

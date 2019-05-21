@@ -1,14 +1,17 @@
 package edu.avgogen.destrukt
 
 import com.google.javascript.rhino.Node
-import kotlin.math.exp
+import edu.avgogen.destrukt.analyze.JsAssignmentsAnalyzer
 
 class JsAssignmentsCollector: JsAssignmentsHandler {
 
     private val nestedScopes = mutableListOf<JsScopedAssignmentsHandler>()
     private val fullyVisitedScopes = mutableListOf<JsScopedAssignmentsHandler>()
 
-    fun noMoreScopes() = nestedScopes.isEmpty()
+    /**
+     * One scope we add explicitly in the init section of [JsFindDestructiblePattern]
+     */
+    fun noMoreScopes() = nestedScopes.size == 1
 
     fun enterNewScope() {
         nestedScopes.add(JsScopedAssignmentsHandler())
@@ -18,6 +21,8 @@ class JsAssignmentsCollector: JsAssignmentsHandler {
         fullyVisitedScopes.add(nestedScopes.last())
         nestedScopes.removeAt(nestedScopes.lastIndex)
     }
+
+    fun applyAnalysis(analyzer: JsAssignmentsAnalyzer) = fullyVisitedScopes.map { analyzer.analyze(it.assignmentsAsList) }
 
     override fun addAssignment(node: Node, assignee: Node, expression: Node) {
         nestedScopes.last().addAssignment(node, assignee, expression)
@@ -52,6 +57,9 @@ class JsAssignmentsCollector: JsAssignmentsHandler {
         override fun hasNotAssignments(): Boolean {
             return assignments.isEmpty()
         }
+
+        internal val assignmentsAsList
+            get() = assignments.values.toList()
 
         fun dump() {
             println()
