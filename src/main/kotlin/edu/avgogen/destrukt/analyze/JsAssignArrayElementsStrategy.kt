@@ -46,7 +46,6 @@ class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
 
     /**
      * TODO: Filter assignments to prevent removing both var a = arr[1]; var b = arr[1]
-     * TODO: Group by declaration type (var / let / const)
      */
     private fun makeSuggestions(assignmentsInfo: Map<String, Map<Token, List<ElementAssignInfo>>>): StrategySuggestedReplacements {
         val suggestedReplaces = mutableListOf<JsAssignmentReplaceInfo>()
