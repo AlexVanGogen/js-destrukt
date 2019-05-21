@@ -1,23 +1,29 @@
 package edu.avgogen.destrukt
 
+import com.google.javascript.jscomp.AbstractCompiler
 import com.google.javascript.jscomp.CodePrinter
 import com.google.javascript.jscomp.NodeTraversal
-import com.google.javascript.rhino.IR
 import com.google.javascript.rhino.Node
 import edu.avgogen.destrukt.analyze.JsAssignArrayElementsStrategy
 import edu.avgogen.destrukt.analyze.JsAssignmentsAnalyzer
-import edu.avgogen.destrukt.analyze.StrategySuggestedReplacements
 
-class JsFindDestructiblePattern(
-    val fileName: String,
-    val newFileCreator: JsNewFileCreator = JsNewFileCreator.DEFAULT
-): NodeTraversal.AbstractScopedCallback() {
+class JsFindDestructiblePattern: NodeTraversal.AbstractScopedCallback() {
 
     private val collector = JsAssignmentsCollector()
     private var root: Node? = null
+    private var newFileContents: String? = null
 
     init {
         collector.enterNewScope()
+    }
+
+    /**
+     * Run traversal action and return new file contents
+     * // TODO exception
+     */
+    fun traverse(compiler: AbstractCompiler, root: Node): String {
+        NodeTraversal.traverse(compiler, root, this)
+        return newFileContents ?: throw RuntimeException()
     }
 
     override fun visit(traversal: NodeTraversal, node: Node, parent: Node?) {
@@ -48,8 +54,7 @@ class JsFindDestructiblePattern(
 
     private fun endSearch() {
         collector.exitLastScope()
-        val newFileContents = runTransformerAndGetResult(JsAstTransformer())
-        newFileCreator.createFileAndWrite(fileName, newFileContents)
+        newFileContents = runTransformerAndGetResult(JsAstTransformer())
     }
 
     private fun runTransformerAndGetResult(transformer: JsAstTransformer): String {
