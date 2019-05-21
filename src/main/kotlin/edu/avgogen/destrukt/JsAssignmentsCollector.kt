@@ -42,7 +42,7 @@ class JsAssignmentsCollector: JsAssignmentsHandler {
         private val assignments = mutableMapOf<String, JsAssignment>()
 
         override fun addAssignment(node: Node, assignee: Node, expression: Node) {
-            assignments[assignee.string!!] = JsAssignment(node, assignee, expression)
+            assignments[assignee.toString()] = JsAssignment(node, assignee, expression)
         }
 
         override fun removeAssignment(assigneeName: String) {
