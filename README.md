@@ -1,6 +1,6 @@
 # js-destrukt
 
-Simple tool that finds statements in JavaScript that can be combined into [destructuring assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment).
+Simple tool that finds statements in JavaScript which can be combined into [destructuring assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment).
 
 ## Build & run
 
@@ -41,6 +41,8 @@ Program takes single JavaScript file as an input, processes it in the following 
 * replaces these nodes with new, generated nodes;
 * converts modified AST back to js code and writes it to the file with extension "out.js".
 
+For parsing source code, AST traversing and manipulation, [Closure Compiler](https://developers.google.com/closure/compiler/) features are used.
+
 ## Examples
 
 ```javascript
@@ -74,3 +76,5 @@ function bar(arr) {
   var bad = 42;
 }
 ```
+
+Other examples can be found in [tests](https://github.com/AlexVanGogen/js-destrukt/tree/master/tests) directory.
