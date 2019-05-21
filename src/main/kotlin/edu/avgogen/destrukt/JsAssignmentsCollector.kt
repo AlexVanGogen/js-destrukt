@@ -19,8 +19,8 @@ class JsAssignmentsCollector: JsAssignmentsHandler {
         nestedScopes.removeAt(nestedScopes.lastIndex)
     }
 
-    override fun addAssignment(assigneeName: String, expression: Node) {
-        nestedScopes.last().addAssignment(assigneeName, expression)
+    override fun addAssignment(node: Node, assignee: Node, expression: Node) {
+        nestedScopes.last().addAssignment(node, assignee, expression)
     }
 
     override fun removeAssignment(assigneeName: String) {
@@ -39,10 +39,10 @@ class JsAssignmentsCollector: JsAssignmentsHandler {
      * Represents assignments located within the same scope.
      */
     private class JsScopedAssignmentsHandler: JsAssignmentsHandler {
-        private val assignments = mutableMapOf<String, Node>()
+        private val assignments = mutableMapOf<String, JsAssignment>()
 
-        override fun addAssignment(assigneeName: String, expression: Node) {
-            assignments[assigneeName] = expression
+        override fun addAssignment(node: Node, assignee: Node, expression: Node) {
+            assignments[assignee.string!!] = JsAssignment(node, assignee, expression)
         }
 
         override fun removeAssignment(assigneeName: String) {
@@ -56,8 +56,8 @@ class JsAssignmentsCollector: JsAssignmentsHandler {
         fun dump() {
             println()
             println("Enter scope")
-            assignments.forEach { name, expression ->
-                println("$name = $expression")
+            assignments.forEach { name, assignment ->
+                println("$name = ${assignment.expression}")
             }
             println("End scope")
             println()

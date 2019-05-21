@@ -12,13 +12,10 @@ class JsFindDestructiblePattern: NodeTraversal.AbstractScopedCallback() {
     }
 
     override fun visit(traversal: NodeTraversal, node: Node, parent: Node?) {
-//        if (node.isScript) {
-//            endSearch()
-//        }
         if (node.isVar) {
             node.children().forEach { assignee ->
-                assignee.firstChild?.let { assigningExpression ->
-                    collector.addAssignment(assignee.string, assigningExpression)
+                assignee.firstChild?.let { assignableExpression ->
+                    collector.addAssignment(node, assignee, assignableExpression)
                 }
             }
         }
