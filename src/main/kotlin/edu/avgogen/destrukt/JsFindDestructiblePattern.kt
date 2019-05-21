@@ -6,8 +6,12 @@ import com.google.javascript.rhino.IR
 import com.google.javascript.rhino.Node
 import edu.avgogen.destrukt.analyze.JsAssignArrayElementsStrategy
 import edu.avgogen.destrukt.analyze.JsAssignmentsAnalyzer
+import edu.avgogen.destrukt.analyze.StrategySuggestedReplacements
 
-class JsFindDestructiblePattern: NodeTraversal.AbstractScopedCallback() {
+class JsFindDestructiblePattern(
+    val fileName: String,
+    val newFileCreator: JsNewFileCreator = JsNewFileCreator.DEFAULT
+): NodeTraversal.AbstractScopedCallback() {
 
     private val collector = JsAssignmentsCollector()
     private var root: Node? = null
@@ -42,31 +46,23 @@ class JsFindDestructiblePattern: NodeTraversal.AbstractScopedCallback() {
         super.exitScope(t)
     }
 
-    /**
-     * TODO refactor
-     */
     private fun endSearch() {
-        collector.exitLastScope();
+        collector.exitLastScope()
+        val newFileContents = runTransformerAndGetResult(JsAstTransformer())
+        newFileCreator.createFileAndWrite(fileName, newFileContents)
+    }
+
+    private fun runTransformerAndGetResult(transformer: JsAstTransformer): String {
         val analyzer = JsAssignmentsAnalyzer()
         analyzer.addStrategy(JsAssignArrayElementsStrategy())
         val summary = collector.applyAnalysis(analyzer)
             .flatten()
             .filter { it.replacements.isNotEmpty() }
             .groupBy { it.strategyClass }
-//        println(summary.values.flatten().joinToString("\n\n"))
-        summary.values.flatten().forEach { it.replacements.forEach { replaceInfo ->
-            val assignmentsToReplace = replaceInfo.assignmentsToReplace
-            if (assignmentsToReplace.isNotEmpty()) {
-                val nodeToReplace = assignmentsToReplace[0]
-                nodeToReplace.node.replaceWith(replaceInfo.suggestedAssignment)
-                assignmentsToReplace.drop(1).forEach { assignment ->
-                    if (assignment.node.parent != null) {
-                        assignment.node.replaceWith(IR.empty())
-                    }
-                }
-            }
-        } }
-        println(CodePrinter.Builder(root).setPrettyPrint(true).build())
+        val replacements = summary.values.flatten()
+        transformer.transform(replacements)
+
+        return CodePrinter.Builder(root).setPrettyPrint(true).build()
     }
 
     fun analyzeVisited(analyzer: JsAssignmentsAnalyzer) {

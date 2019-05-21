@@ -14,7 +14,7 @@ class JsParser {
         options.setContinueAfterErrors(true)
         compiler.initOptions(options)
         val root = JsAst(SourceFile.fromCode(jsFileName, jsFileContent)).getAstRoot(compiler)
-        val jsFinder = JsFindDestructiblePattern()
+        val jsFinder = JsFindDestructiblePattern(jsFileName)
         NodeTraversal.traverse(compiler, root, jsFinder)
     }
 }
