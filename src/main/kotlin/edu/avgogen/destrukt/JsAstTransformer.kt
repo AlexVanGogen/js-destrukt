@@ -40,7 +40,6 @@ class JsAstTransformer {
             node?.removeChild(child)
         }
     }
-
     /**
      * Removes assignments shadowed by following assignments to the same variable in the same statement.
      * It will eliminate problems with such declarations:
