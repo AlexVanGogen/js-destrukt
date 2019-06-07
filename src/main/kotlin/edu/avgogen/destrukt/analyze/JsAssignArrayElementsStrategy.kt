@@ -4,10 +4,11 @@ import com.google.javascript.rhino.IR
 import com.google.javascript.rhino.Node
 import com.google.javascript.rhino.Token
 import edu.avgogen.destrukt.JsAssignment
-import edu.avgogen.destrukt.prettyPrint
 
 
-class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
+class JsAssignArrayElementsStrategy(
+    private val replacementLengthLimit: Int = LENGTH_THRESHOLD
+): JsAssignmentsAnalyzingStrategy {
 
     override fun analyze(assignments: List<JsAssignment>): StrategySuggestedReplacements {
         val assignmentsInfo: Map<String, Map<Token, List<ElementAssignInfo>>> = collectArrayElementsAssignments(assignments)
@@ -35,6 +36,7 @@ class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
         return assignmentsInfo
             .splitByDeclarationType()
             .filterRepeatingIndexAccess()
+            .filterUnaccepted(TooLongReplacementFilter(limit = replacementLengthLimit))
     }
 
     /**
@@ -63,6 +65,17 @@ class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
             filteredMap[arrayName] = oneTypeAssignments
         }
         return filteredMap
+    }
+
+    private fun Map<String, Map<Token, List<ElementAssignInfo>>>.filterUnaccepted(filter: ReplacementFilter): Map<String, Map<Token, List<ElementAssignInfo>>> {
+        val result = mutableMapOf<String, Map<Token, List<ElementAssignInfo>>>()
+        this.forEach { name, map ->
+            val filteredMap = map.mapValues { (_, assignments) -> filter.accept(assignments) }
+            if (filteredMap.isNotEmpty()) {
+                result[name] = filteredMap
+            }
+        }
+        return result
     }
 
     private fun makeSuggestions(assignmentsInfo: Map<String, Map<Token, List<ElementAssignInfo>>>): StrategySuggestedReplacements {
@@ -113,4 +126,19 @@ class JsAssignArrayElementsStrategy: JsAssignmentsAnalyzingStrategy {
         val assignment: JsAssignment,
         val index: Int
     )
+
+    private interface ReplacementFilter {
+        fun accept(assignments: List<ElementAssignInfo>): List<ElementAssignInfo>
+    }
+
+    private class TooLongReplacementFilter(val limit: Int): ReplacementFilter {
+
+        override fun accept(assignments: List<ElementAssignInfo>): List<ElementAssignInfo> {
+            return assignments.filter { it.index <= limit }
+        }
+    }
+
+    companion object {
+        private const val LENGTH_THRESHOLD = 10
+    }
 }
