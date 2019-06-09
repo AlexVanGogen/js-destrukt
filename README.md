@@ -32,6 +32,16 @@ Run:
 ./destrukt <filename.js>
 ```
 
+## Run tests
+
+For both alternatives:
+
+```
+./gradlew test
+```
+
+Or you can run Gradle `test` task from IDEA directly.
+
 ## Description
 
 Program takes single JavaScript file as an input, processes it in the following way:
