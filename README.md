@@ -1,5 +1,7 @@
 # js-destrukt
 
+[![Build Status](https://travis-ci.com/AlexVanGogen/js-destrukt.svg?branch=master)](https://travis-ci.com/AlexVanGogen/js-destrukt)
+
 Simple tool that finds statements in JavaScript which can be combined into [destructuring assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment).
 
 ## Build & run
